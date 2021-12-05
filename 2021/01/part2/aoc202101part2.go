@@ -17,24 +17,50 @@ func log(err error) {
 	fmt.Fprintf(os.Stderr, "encountered error: %v\n", err)
 }
 
+// window is a wrap-around buffer
 type window struct {
-	elements []int
+	elements [4]int
+	next     int
+	wrapped  bool
 }
 
 func (w *window) push(depth int) {
-	w.elements = append(w.elements, depth)
-}
-
-func (w *window) count() int {
-	return len(w.elements)
+	w.elements[w.next] = depth
+	if w.next >= 3 {
+		w.next = 0
+		w.wrapped = true
+	} else {
+		w.next++
+	}
 }
 
 func (w *window) last() []int {
-	return w.elements[w.count()-4 : w.count()-1]
+	upperLimit := w.next + 3
+	var h1, h2 []int
+
+	if upperLimit > 4 {
+		h1 = w.elements[w.next:]
+		lowerLimit := upperLimit - 4
+		h2 = w.elements[:lowerLimit]
+	} else {
+		h1 = w.elements[w.next:upperLimit]
+	}
+
+	return append(h1, h2[:]...)
 }
 
 func (w *window) curr() []int {
-	return w.elements[w.count()-3:]
+	lowerLimit := w.next + 1
+	var h1, h2 []int
+
+	if lowerLimit == 4 {
+		h1 = w.elements[0:3]
+	} else {
+		h1 = w.elements[lowerLimit:]
+		h2 = w.elements[:w.next]
+	}
+
+	return append(h1, h2[:]...)
 }
 
 func sum(i []int) int {
@@ -51,12 +77,20 @@ var depthWindow window
 func handle(depth int) {
 	depthWindow.push(depth)
 
-	if depthWindow.count() > 3 {
-		fmt.Printf("last: %v\n", depthWindow.last())
-		fmt.Printf("curr: %v\n", depthWindow.curr())
+	if depthWindow.wrapped {
+		//fmt.Printf("full: %v\n", depthWindow.elements)
+		//fmt.Printf("last: %v\n", depthWindow.last())
+		//fmt.Printf("curr: %v\n", depthWindow.curr())
 
-		if sum(depthWindow.curr()) > sum(depthWindow.last()) {
+		curr := sum(depthWindow.curr())
+		last := sum(depthWindow.last())
+		if curr > last {
 			increased++
+			fmt.Println("+increased:", curr)
+		} else if curr == last {
+			fmt.Println("~no change:", curr)
+		} else {
+			fmt.Println("-decreased:", curr)
 		}
 	}
 }
