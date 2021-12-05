@@ -68,6 +68,8 @@ public class Board {
      * @return `True` if the board won, `False` otherwise.
      */
     public boolean callNumber(int number) {
+        if (this.hasBingo) return true;
+
         stepsToBingo++;
 
         for (Field field : this.fields) {
