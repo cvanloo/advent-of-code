@@ -17,7 +17,6 @@ public class Board {
 
     private boolean hasBingo = false;
     private int numberAtBingo;
-    private int stepsToBingo = 0;
 
     // --- Methods/Behavior --- //
 
@@ -68,10 +67,6 @@ public class Board {
      * @return `True` if the board won, `False` otherwise.
      */
     public boolean callNumber(int number) {
-        if (this.hasBingo) return true;
-
-        stepsToBingo++;
-
         for (Field field : this.fields) {
             if (field.getNumber() == number) {
                 field.check();
@@ -132,8 +127,6 @@ public class Board {
             if (!field.getChecked()) fields.add(field);
         }
 
-        //Field[] fieldsArr = fields.toArray(new Field[0]);
-
         // Get the numbers of the unmarked fields.
         int[] unmarkedFields = new int[fields.size()];
         int iterator = 0;
@@ -151,9 +144,5 @@ public class Board {
 
     public int getNumberAtBingo() {
         return this.numberAtBingo;
-    }
-
-    public int getStepsToBingo() {
-        return this.stepsToBingo;
     }
 }

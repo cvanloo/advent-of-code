@@ -88,23 +88,15 @@ public class Main {
             return;
         }
 
+        Board lastWinner = null;
+
         // Iterate over all called numbers and pass them to the boards.
         for (int calledNumber : calledNumbers) {
             for (Board board : boards) {
                 // Don't do anything if the board already has won.
-                if (!board.getHasBingo())
-                    board.callNumber(calledNumber);
-            }
-        }
-
-        Board lastWinner = null;
-
-        // Find the last winner.
-        for (Board board : boards) {
-            if (board.getHasBingo()) {
-                int steps = board.getStepsToBingo();
-                if (null == lastWinner || steps > lastWinner.getStepsToBingo()) {
-                    lastWinner = board;
+                if (!board.getHasBingo()) {
+                    boolean isBingo = board.callNumber(calledNumber);
+                    if (isBingo) lastWinner = board;
                 }
             }
         }
