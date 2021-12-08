@@ -45,6 +45,7 @@ func panicIf(err error) {
 func main() {
 	file, err := os.Open("input.txt")
 	panicIf(err)
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	pos := position{}
@@ -68,8 +69,8 @@ func main() {
 		panicIf(err)
 
 		inst := command{
-			direction:    d,
-			amount: u,
+			direction: d,
+			amount:    u,
 		}
 
 		pos.handle(inst)

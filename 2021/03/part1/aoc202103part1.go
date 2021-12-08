@@ -52,6 +52,7 @@ func main() {
 	bits := [lineLength][2]uint{}
 	file, err := os.Open("input.txt")
 	panicIf(err)
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 

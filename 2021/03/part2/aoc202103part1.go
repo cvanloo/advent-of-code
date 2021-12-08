@@ -96,6 +96,7 @@ func main() {
 
 	file, err := os.Open("input.txt")
 	panicIf(err)
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
