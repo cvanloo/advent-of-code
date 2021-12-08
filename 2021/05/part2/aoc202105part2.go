@@ -15,14 +15,26 @@ func checkif(err error) {
 	}
 }
 
-const gridSize = 10
+// sign returns `-1` if the number is negative, `0` if the number is `0` or `1`
+// if the number is positive.
+func sign(i int) int {
+	switch {
+	case i < 0:
+		return -1
+	case i > 0:
+		return 1
+	}
+	return 0
+}
 
-//const gridSize = 1000
+//const gridSize = 10
+
+const gridSize = 1000
 
 func main() {
-	file, err := os.Open("test.txt")
+	file, err := os.Open("input.txt")
 	checkif(err)
-	defer file.Close()
+	defer file.Close() // ignore error of `Close`
 
 	linesMatrix := [gridSize][gridSize]int{}
 
@@ -43,28 +55,26 @@ func main() {
 		eY, err := strconv.Atoi(endPoints[1])
 		checkif(err)
 
-		maxX := int(math.Max(float64(eX), float64(sX)))
-		minX := int(math.Min(float64(eX), float64(sX)))
+		displacementX := eX - sX
+		displacementY := eY - sY
 
-		maxY := int(math.Max(float64(eY), float64(sY)))
-		minY := int(math.Min(float64(eY), float64(sY)))
-
-		top := int(math.Max(float64(maxY-minY), float64(maxX-minX)))
+		// find the length of the line
+		top := int(math.Max(math.Abs(float64(displacementX)),
+			math.Abs(float64(displacementY))))
 
 		for i := 0; i <= top; i++ {
-			linesMatrix[minY][minX]++
-			if minY < maxY {
-				minY++
-			}
-			if minX < maxX {
-				minX++
-			}
+			// NOTE: By using the `sign` function we will continue to increment
+			// when the displacement is positive, continue to decrement if it
+			// is negative or do nothing if it is 0.
+			x := sX + sign(displacementX)*i
+			y := sY + sign(displacementY)*i
+			linesMatrix[y][x]++
 		}
 
-		fmt.Printf("%v\n", readLine)
+		/*fmt.Printf("%v\n", readLine)
 		for i := 0; i < len(linesMatrix); i++ {
 			fmt.Printf("%v\n", linesMatrix[i])
-		}
+		}*/
 	}
 
 	checkif(scanner.Err())
