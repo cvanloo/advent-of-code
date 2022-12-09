@@ -1,9 +1,23 @@
 function copy!(array, start, elements)
-    start_array = array[start:length(array)]
+    max = length(array)
+    for (i, v) in enumerate(elements)
+        idx = i+start-1
+        if idx > max
+            break
+        end
+        array[idx] = v
+    end
+end
+
+# Both work, which one makes the intent more clear?
+# Why isn't there anything like rusts enumerator.skip(n)?
+function copy2!(array, start, elements)
     j = 1
-    for (i, _) in enumerate(start_array)
-        array[i+start-1] = elements[j]
-        j = j + 1
+    for (i, v) in enumerate(array)
+        if i < start
+            continue
+        end
+        array[i] = elements[j]
     end
 end
 
