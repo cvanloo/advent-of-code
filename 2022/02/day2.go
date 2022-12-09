@@ -65,6 +65,10 @@ type Opponent struct {
 	current int
 }
 
+func NewOpponent(moves []Move) Opponent {
+	return Opponent{moves, 0}
+}
+
 // (Opponent - Me) % 3 = Outcome, Score = Move + Outcome
 // 1 - 2 = -1 % 3 = 2 Win (2+6=8)
 // 2 - 1 = 1 % 3 = 1 Lose (1+0=1)
@@ -116,7 +120,7 @@ func CreateGame(input io.Reader) (Opponent, []Move, error) {
 		return Opponent{}, nil, err
 	}
 
-	return Opponent{enemyMoves, 0}, myMoves, nil
+	return NewOpponent(enemyMoves), myMoves, nil
 }
 
 // A X Rock
@@ -137,12 +141,12 @@ func main() {
 	}
 	defer fd.Close()
 
-	score := Score(0)
 	opponent, moves, err := CreateGame(fd)
 	if err != nil {
 		log.Fatalf("failed to create game: %v\n", err)
 	}
 
+	score := Score(0)
 	for _, move := range moves {
 		outcome := opponent.Play(move)
 		score += NewScore(move, outcome)
