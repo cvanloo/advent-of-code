@@ -15,6 +15,14 @@ func modneg(d, m int) int {
 		return res + m
 	}
 	return res
+
+	// Or:
+	// return (d % m + m) % m
+	//
+	// Or:
+	//bd := big.NewInt(int64(d))
+	//bm := big.NewInt(int64(m))
+	//return int(new(big.Int).Mod(bd, bm).Int64())
 }
 
 type Move int
