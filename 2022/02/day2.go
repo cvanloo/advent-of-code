@@ -104,12 +104,12 @@ func CreateGame(input io.Reader) (Opponent, []Move, error) {
 		// parts[1] is my move
 		enemyMove, err := NewMove(parts[0])
 		if err != nil {
-			log.Fatalf("failed to parse %s as move: %v\n", parts[0], err)
+			return Opponent{}, nil, fmt.Errorf("failed to parse %s as move: %v\n", parts[0], err)
 		}
 
 		myMove, err := NewMove(parts[1])
 		if err != nil {
-			log.Fatalf("failed to parse %s as move: %v\n", parts[1], err)
+			return Opponent{}, nil, fmt.Errorf("failed to parse %s as move: %v\n", parts[1], err)
 		}
 
 		enemyMoves = append(enemyMoves, enemyMove)
