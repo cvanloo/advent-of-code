@@ -34,7 +34,7 @@ func NewMove(str string) (m Move, err error) {
 	case "C":
 		m = Scissors
 	default:
-        err = fmt.Errorf("invalid move: %s", str)
+		err = fmt.Errorf("invalid move: %s", str)
 	}
 
 	return
@@ -48,16 +48,16 @@ const (
 	Won          = 6
 )
 
-func NewOutcome(str string) (out Outcome, err error) {
-    switch str {
-    case "X":
-        return Lost, nil
-    case "Y":
-        return Draw, nil
-    case "Z":
-        return Won, nil
-    }
-    return Outcome(0), fmt.Errorf("invalid outcome: %s", str)
+func NewOutcome(str string) (Outcome, error) {
+	switch str {
+	case "X":
+		return Lost, nil
+	case "Y":
+		return Draw, nil
+	case "Z":
+		return Won, nil
+	}
+	return Outcome(0), fmt.Errorf("invalid outcome: %s", str)
 }
 
 type Score int
@@ -76,11 +76,11 @@ func NewOpponent(moves []Move) Opponent {
 }
 
 func (o *Opponent) Advance() bool {
-    o.current++
-    if o.current > len(o.moves)-1 {
-        return false
-    }
-    return true
+	o.current++
+	if o.current > len(o.moves)-1 {
+		return false
+	}
+	return true
 }
 
 // (Opponent - Me) % 3 = Outcome, Score = Move + Outcome
@@ -136,13 +136,13 @@ func CreateGame(input io.Reader) (Opponent, []Outcome, error) {
 	return NewOpponent(enemyMoves), outcomes, nil
 }
 
-// A X Rock
-// B Y Paper
-// C Z Scissors
+// A Rock
+// B Paper
+// C Scissors
 //
-// A Y
-// B X
-// C Z
+// X Lose
+// Y Draw
+// Z Win
 //
 // Rock 1, Paper 2, Scissors 3
 // Lose 0, Draw 3, Win 6
@@ -159,20 +159,20 @@ func main() {
 		log.Fatalf("failed to create game: %v\n", err)
 	}
 
-    moves := []Move{Rock, Paper, Scissors}
+	moves := []Move{Rock, Paper, Scissors}
 	score := Score(0)
-    outIdx := 0
-    for opponent.Advance() {
-        requiredOutcome := outcomes[outIdx]
-        outIdx++
-        for _, move := range moves {
-            actualOutcome := opponent.Play(move)
-            if actualOutcome == requiredOutcome {
-                score += NewScore(move, actualOutcome)
-                break
-            }
-        }
-    }
+	outIdx := 0
+	for opponent.Advance() {
+		requiredOutcome := outcomes[outIdx]
+		outIdx++
+		for _, move := range moves {
+			actualOutcome := opponent.Play(move)
+			if actualOutcome == requiredOutcome {
+				score += NewScore(move, actualOutcome)
+				break
+			}
+		}
+	}
 
 	fmt.Printf("My score: %d\n", score)
 }
