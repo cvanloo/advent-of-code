@@ -2,12 +2,12 @@
   (:require (clojure [string :as str]
                      [set :as set])))
 
-(defn parse-input
-  [input]
+(defn parse-lines
+  [lines]
   (map
    (fn [rucksack]
      (split-at (/ (count rucksack) 2) rucksack))
-   input))
+   lines))
 
 (defn find-duplicates
   [rucksacks]
@@ -31,7 +31,7 @@
   [filename]
   (let [input (str/split-lines (slurp filename))]
     (->> input
-         parse-input
+         parse-lines
          find-duplicates
          (map #(int %))
          prioritize
