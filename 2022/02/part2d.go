@@ -70,6 +70,10 @@ func copyToClipboard(text string) {
 		panic("have you heard of our lord and saviour, GNU/Linux?")
 	}
 
+	if _, err := exec.LookPath("xsel"); err != nil {
+		panic("paru -Syu xsel")
+	}
+
 	command := exec.Command("xsel", "-bi")
 	stdin, err := command.StdinPipe()
 	panicIf(err)
