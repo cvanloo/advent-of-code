@@ -10,7 +10,7 @@ import (
 	"runtime"
 )
 
-const size = 4
+const size = 14
 
 type WrapBuffer struct {
 	wrapped  bool
