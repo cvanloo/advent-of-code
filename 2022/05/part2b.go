@@ -76,15 +76,15 @@ func parseInput(input string) ([]Stack, []Instruction, error) {
 	// Based on the last stack line we can get the total number of crates per stack.
 	// The last line is the only stack line where every stack must have at least one element.
 	lastStackLine := stackStrs[len(stackStrs)-1]
-	numberOfCrates := len(strings.Split(lastStackLine, " "))
+	numberOfStacks := len(strings.Split(lastStackLine, " "))
 
-	stacks := make([]Stack, numberOfCrates)
-	stackLength := len(stackStrs) - 1
+	stacks := make([]Stack, numberOfStacks)
+	lastStack := len(stackStrs) - 1
 
-	for i := stackLength; i >= 0; i-- {
+	for i := lastStack; i >= 0; i-- {
 		stackStr := stackStrs[i]
 
-		for j := 0; j < numberOfCrates; j++ {
+		for j := 0; j < numberOfStacks; j++ {
 			crate := []rune(stackStr)[j*4+1]
 
 			if crate != ' ' {
