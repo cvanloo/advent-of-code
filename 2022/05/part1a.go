@@ -87,18 +87,13 @@ type Instruction struct {
 }
 
 func (ins Instruction) Apply(stacks []Stack) {
-	popped := NewStack()
-
 	for i := 0; i < ins.amount; i++ {
 		val, _ := stacks[ins.from].Top()
-		stacks[ins.from], _ = stacks[ins.from].Pop()
-		popped = popped.Push(val)
-	}
+		newToStack := stacks[ins.to].Push(val)
+		newFromStack, _ := stacks[ins.from].Pop()
 
-	for i := 0; i < ins.amount; i++ {
-		val, _ := popped.Top()
-		popped, _ = popped.Pop()
-		stacks[ins.to] = stacks[ins.to].Push(val)
+		stacks[ins.to] = newToStack
+		stacks[ins.from] = newFromStack
 	}
 }
 

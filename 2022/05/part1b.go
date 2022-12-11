@@ -86,7 +86,7 @@ type Instruction struct {
 	to     int
 }
 
-func (ins Instruction) Apply(stacks []Stack) []Stack {
+func (ins Instruction) Apply(stacks []Stack) {
 	for i := 0; i < ins.amount; i++ {
 		val, _ := stacks[ins.from].Top()
 		newToStack := stacks[ins.to].Push(val)
@@ -95,7 +95,6 @@ func (ins Instruction) Apply(stacks []Stack) []Stack {
 		stacks[ins.to] = newToStack
 		stacks[ins.from] = newFromStack
 	}
-	return stacks
 }
 
 func panicIf(err error) {
@@ -111,16 +110,11 @@ func parseInput(input string) (stacks []Stack, instructions []Instruction, err e
 	stackStrs := strings.Split(inputParts[0], "\n")
 	instructionStrs := strings.Split(inputParts[1], "\n")
 
-	reverse := func(s []string) {
-		for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-			s[i], s[j] = s[j], s[i]
-		}
-	}
-	reverse(stackStrs)
+	stackStrs = stackStrs[0 : len(stackStrs)-1]
 
-	stackStrs = stackStrs[1:]
+	for i := len(stackStrs)-1; i >= 0; i-- {
+		stackStr := stackStrs[i]
 
-	for _, stackStr := range stackStrs {
 		start, end := 0, 4
 		stackPos := -1
 
