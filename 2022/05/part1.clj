@@ -69,9 +69,10 @@
 (defn main
   [filename]
   (let [[stack-strs instruction-strs] (str/split (slurp filename) #"\n\n")
-        stacks (into (sorted-map) (parse-stack stack-strs))
+        stacks (parse-stack stack-strs)
         instructions (vec (parse-instructions instruction-strs))]
     (->> (run instructions stacks)
+         (into (sorted-map))
          (vals)
          (map first)
          (apply str))))
