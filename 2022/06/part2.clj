@@ -4,7 +4,7 @@
 (defn find-marker
   [line]
   (loop [line line idx 14]
-    (let [characters (set (take 14 line))]
+    (let [characters (distinct (take 14 line))]
       (if (= (count characters) 14)
        idx
        (recur (rest line) (inc idx))))))
