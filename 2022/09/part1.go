@@ -24,17 +24,17 @@ func (p Point) Distance(to Point) int {
 	return abs(to.x-p.x) + abs(to.y-p.y)
 }
 
-func (p Point) Move(m Move) (newp Point) {
+func (p Point) Step(d Direction) (newp Point) {
 	newp = p
-	switch m.direction {
+	switch d {
 	case Up:
-		newp.y += m.amount
+		newp.y += 1
 	case Down:
-		newp.y -= m.amount
+		newp.y -= 1
 	case Right:
-		newp.x += m.amount
+		newp.x += 1
 	case Left:
-		newp.x -= m.amount
+		newp.x -= 1
 	}
 	return
 }
@@ -77,13 +77,13 @@ func (p Point) String() string {
 	return fmt.Sprintf("(%d %d)", p.x, p.y)
 }
 
-type Direction int
+type Direction string
 
 const (
-	Up Direction = iota
-	Down
-	Left
-	Right
+	Up    Direction = "Up"
+	Down            = "Down"
+	Left            = "Left"
+	Right           = "Right"
 )
 
 type Move struct {
@@ -159,12 +159,9 @@ func main() {
 		}
 
 		for i := 0; i < move.amount; i++ {
-			head = head.Move(Move{
-				direction: move.direction,
-				amount:    1,
-			})
+			head = head.Step(move.direction)
 			tail = tail.Follow(head)
-			fmt.Printf("H: %v, T: %v\n", head, tail)
+			fmt.Printf("M: %+v, H: %v, T: %v\n", move, head, tail)
 			tailVisited[tail] = true
 
 			fmt.Println(PrettyPrint(6, 5, head, tail))
@@ -175,5 +172,5 @@ func main() {
 		log.Printf("reading stdin failed: %v", err)
 	}
 
-	fmt.Printf("Tail visited: %+v (%d)\n", tailVisited, len(tailVisited))
+	fmt.Printf("Tail visited %d fields.\n", len(tailVisited))
 }
