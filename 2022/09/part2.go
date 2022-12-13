@@ -50,39 +50,32 @@ func parseMove(line string) (m Move, err error) {
 }
 
 func followPoint(p *Point, other Point) {
+	// Go's std doesn't have an abs for ints :-(
+	abs := func(a int) int {
+		if a < 0 {
+			return -a
+		}
+		return a
+	}
+
 	dx := other.x - p.x
 	dy := other.y - p.y
-	if dx > -2 && dx < 2 && dy > -2 && dy < 2 {
-		return
-	}
 
-	if p.x == other.x {
-		if other.y > p.y {
-			p.y += 1
-		} else {
-			p.y -= 1
-		}
-		return
-	}
-
-	if p.y == other.y {
-		if other.x > p.x {
-			p.x += 1
-		} else {
-			p.x -= 1
-		}
+	if abs(dx) < 2 && abs(dy) < 2 {
 		return
 	}
 
 	if other.x > p.x {
 		p.x += 1
-	} else {
+	}
+	if other.x < p.x {
 		p.x -= 1
 	}
 
 	if other.y > p.y {
 		p.y += 1
-	} else {
+	}
+	if other.y < p.y {
 		p.y -= 1
 	}
 }
