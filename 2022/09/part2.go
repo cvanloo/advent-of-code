@@ -67,15 +67,13 @@ func followPoint(p *Point, other Point) {
 
 	if other.x > p.x {
 		p.x += 1
-	}
-	if other.x < p.x {
+	} else if other.x < p.x {
 		p.x -= 1
 	}
 
 	if other.y > p.y {
 		p.y += 1
-	}
-	if other.y < p.y {
+	} else if other.y < p.y {
 		p.y -= 1
 	}
 }
