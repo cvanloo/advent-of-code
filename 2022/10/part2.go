@@ -30,12 +30,12 @@ type Crt struct {
 	frameIndex int
 }
 
-func (c *Crt) Draw(pos int) {
+func (c *Crt) Draw(hpos int) {
 	pixel := "."
 	idx := c.frameIndex
 
 	lineIdx := idx % width
-	if lineIdx >= pos-1 && lineIdx <= pos+1 {
+	if lineIdx >= hpos-1 && lineIdx <= hpos+1 {
 		pixel = "#"
 	}
 
