@@ -83,7 +83,7 @@ func main() {
 	knots := [10]Point{}
 	head := &knots[0]
 	tail := &knots[9]
-	positionsVisited := map[Point]bool{*head: true}
+	positionsVisited := map[Point]bool{*tail: true}
 
 	for scanner.Scan() {
 		line := scanner.Text()
