@@ -13,7 +13,7 @@
         (>= y max-y)
         nil
         (= \S (nth (nth fields y) x))
-        [x y]
+        {:pos [x y] :val \a}
         :else (recur (inc x) y)))))
 
 ;(find-start-pos (map seq (str/split-lines (slurp "test.txt"))))
@@ -24,10 +24,10 @@
   (nth (nth fields y nil) x nil))
 
 (defn get-neighbours
-  [fields [posx posy]]
+  [fields [cordx cordy]]
   (for [[x y] '([0 -1] [0 +1] [-1 0] [+1 0])]
-    (let [x (+ posx x)
-          y (+ posy y)
+    (let [x (+ cordx x)
+          y (+ cordy y)
           val (index fields [x y])]
       {:pos [x y] :val val})))
 
@@ -51,10 +51,10 @@
 
 (defn find-allowed-fields
   [fields path pos]
-  (let [ns (get-neighbours fields pos)]
+  (let [ns (get-neighbours fields (:pos pos))]
     (->> ns
          (filter #(not (nil? (:val %))))
-         (filter #(>= 1 (height-difference \a (:val %))))
+         (filter #(>= 1 (height-difference (:val pos) (:val %))))
          (filter #(nil? (path-contains? path %))))))
 
 ;(find-allowed-fields (map seq (str/split-lines (slurp "test.txt"))) '() [0 0])
@@ -67,7 +67,7 @@
   [fields path]
   (let [current (first path)
         neighbours (find-allowed-fields fields path current)]
-    (if (nil? current)
+    (if (empty? neighbours)
       path
       (follow-path fields (conj path (first neighbours))))))
 
