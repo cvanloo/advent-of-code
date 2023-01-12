@@ -113,7 +113,11 @@ static lexer_token next_newline(lexer *l) {
 
     lexer_token token = emit(l, INSTRUCTION_END);
     fix(l);
-    token.lexeme = "\\n";
+    free(token.lexeme);
+    token.lexeme = malloc(3);
+    token.lexeme[0] = '\\';
+    token.lexeme[1] = 'n';
+    token.lexeme[2] = 0;
     ++l->lineno;
     return token;
 }
@@ -135,6 +139,10 @@ lexer lexer_create(char *input, size_t input_size, size_t capacity) {
 }
 
 void lexer_destroy(lexer *l) {
+    const lexer_token *tokens = l->tokens;
+    for (size_t i = 0; i < l->token_count; ++i) {
+        free(tokens[i].lexeme);
+    }
     free(l->tokens);
     l->tokens = NULL;
     l->token_count = 0;

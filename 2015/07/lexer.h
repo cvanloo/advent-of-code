@@ -32,7 +32,7 @@ static inline const char *token_type_str(lexer_token_type type) {
 
 typedef struct lexer_token {
     lexer_token_type type;
-    const char *lexeme;
+    char *lexeme;
     uint64_t lineno;
 } lexer_token;
 
@@ -40,9 +40,8 @@ typedef struct lexer {
     lexer_token *tokens;
     size_t token_count;
     size_t token_capacity;
-    const char *input;
-    const size_t input_size;
     char *position;
+    const size_t input_size;
     size_t mark;
     uint64_t lineno;
     bool has_error;
