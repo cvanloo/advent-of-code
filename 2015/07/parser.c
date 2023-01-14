@@ -61,6 +61,7 @@ static node *next_variable(parser *p) {
     node circuit;
     circuit.type = WIRE_POINT;
     circuit.value = 0;
+    circuit.is_value_set = false;
     circuit.type_value.wire.name = search;
     circuit.type_value.wire.name_len = search_len;
 
@@ -88,6 +89,7 @@ static void next_input_source(parser *p) {
     node circuit;
     circuit.type = INPUT_SOURCE;
     circuit.value = value;
+    circuit.is_value_set = true;
     next_wire_point(p, add_node(p, circuit));
 }
 
@@ -99,6 +101,7 @@ static node *next_value_or_variable(parser *p) {
         node circuit;
         circuit.type = INPUT_SOURCE;
         circuit.value = value;
+        circuit.is_value_set = true;
         n = add_node(p, circuit);
         break;
     }
@@ -128,6 +131,7 @@ static void next_binary_operation(parser *p) {
     node operation;
     operation.type = BINARY_OPERATION;
     operation.value = 0;
+    operation.is_value_set = false;
     switch (pc(p).type) {
     case OPERATION_AND: {
         operation.type_value.bin_op.type = AND;
@@ -172,6 +176,7 @@ static void next_unary_operation(parser *p) {
     node operation;
     operation.type = UNARY_OPERATION;
     operation.value = 0;
+    operation.is_value_set = false;
     adv(p);
 
     assert(pc(p).type == VARIABLE);

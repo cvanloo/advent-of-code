@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
         .tokens = aoc_lexer.tokens,
         .token_count = aoc_lexer.token_count,
         .position = 0,
-        .logic_board = malloc(sizeof(node) * 100),
+        .logic_board = malloc(sizeof(node) * 5000),
         .logic_capacity = 5000,
         .logic_size = 0,
     };
@@ -59,28 +59,6 @@ int main(int argc, char **argv) {
 
 #if DEBUG == 1
     logic_board_print(aoc_parser.logic_board, aoc_parser.logic_size);
-#endif
-
-#if 0
-    for (size_t i = 0; i < aoc_parser.logic_size; ++i) {
-        const node circuit = aoc_parser.logic_board[i];
-
-        switch (circuit.type) {
-        case WIRE_POINT: {
-            assert(circuit.type_value.wire.input != NULL);
-        }
-        case BINARY_OPERATION: {
-            assert(circuit.type_value.bin_op.lhs != NULL);
-            assert(circuit.type_value.bin_op.rhs != NULL);
-        }
-        case UNARY_OPERATION: {
-            assert(circuit.type_value.un_op.input != NULL);
-        }
-        case INPUT_SOURCE:
-        default:
-            break;
-        }
-    }
 #endif
 
     // Find circuit node wire_point with cli args provided name.
@@ -109,6 +87,7 @@ int main(int argc, char **argv) {
     // Cleanup
     lexer_destroy(&aoc_lexer);
     free(input_text);
+    free(aoc_parser.logic_board);
 
     return EXIT_SUCCESS;
 }

@@ -52,33 +52,40 @@ uint16_t logic_board_evaluate(node *circuit) {
 }
 
 typedef struct node_stack {
-    node *n;
-    struct node_stack *prev;
+    node **nodes;
+    int count;
+    int capacity;
 } node_stack;
 
-static void push(node_stack **top, node *n) {
-    node_stack *new = (node_stack *)malloc(sizeof(node_stack));
-    assert(new != NULL);
-
-    new->n = n;
-    new->prev = *top;
-    *top = new;
+static inline void push(node_stack *stack, node *n) {
+    assert(stack->count < stack->capacity);
+    stack->nodes[++stack->count] = n;
 }
 
-static void pop(node_stack **top) {
-    node_stack *curr = *top;
-    node_stack *prev = curr->prev;
-    free(curr);
-    curr = NULL;
-    *top = prev;
+static inline node *pop(node_stack *stack) {
+    node *n = stack->nodes[--stack->count];
+    return n;
+}
+
+static inline node *peek(node_stack *stack) {
+    node *n = stack->nodes[stack->count];
+    return n;
+}
+
+static inline bool is_empty(node_stack *stack) {
+    return stack->count == -1;
 }
 
 uint16_t logic_board_evaluate_stack_friendly(node *circuit) {
-    node_stack *stack = NULL;
+    node_stack stack;
+    stack.capacity = 1000;
+    stack.count = -1;
+    stack.nodes = (node **)malloc(sizeof(node *) * 1000);
+
     push(&stack, circuit);
 
-    while (stack != NULL) {
-        node *c = stack->n;
+    while (!is_empty(&stack)) {
+        node *c = peek(&stack);
         switch (c->type) {
         case WIRE_POINT: {
             if (c->type_value.wire.input->is_value_set) {
@@ -152,5 +159,6 @@ uint16_t logic_board_evaluate_stack_friendly(node *circuit) {
         }
     }
 
+    free(stack.nodes);
     return circuit->value;
 }
