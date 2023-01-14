@@ -46,9 +46,11 @@ typedef struct node {
         unary_operation un_op;
     } type_value;
     uint16_t value;
+    bool is_value_set;
 } node;
 
-static inline void logic_board_print(const node *board, const size_t board_len) {
+static inline void logic_board_print(const node *board,
+                                     const size_t board_len) {
     for (size_t i = 0; i < board_len; ++i) {
         node n = board[i];
 
@@ -97,5 +99,6 @@ static inline void logic_board_print(const node *board, const size_t board_len) 
 }
 
 uint16_t logic_board_evaluate(node *circuit);
+uint16_t logic_board_evaluate_stack_friendly(node *circuit);
 
 #endif // AOC_LOGIC_BOARD_H

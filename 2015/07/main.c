@@ -51,19 +51,41 @@ int main(int argc, char **argv) {
         .token_count = aoc_lexer.token_count,
         .position = 0,
         .logic_board = malloc(sizeof(node) * 100),
-        .logic_capacity = 100,
+        .logic_capacity = 5000,
         .logic_size = 0,
     };
     parse_logic_board(&aoc_parser);
+    printf("Logic Board Nodes: %lu\n", aoc_parser.logic_size);
 
 #if DEBUG == 1
-    printf("Logic Board Nodes: %lu\n", aoc_parser.logic_size);
     logic_board_print(aoc_parser.logic_board, aoc_parser.logic_size);
+#endif
+
+#if 0
+    for (size_t i = 0; i < aoc_parser.logic_size; ++i) {
+        const node circuit = aoc_parser.logic_board[i];
+
+        switch (circuit.type) {
+        case WIRE_POINT: {
+            assert(circuit.type_value.wire.input != NULL);
+        }
+        case BINARY_OPERATION: {
+            assert(circuit.type_value.bin_op.lhs != NULL);
+            assert(circuit.type_value.bin_op.rhs != NULL);
+        }
+        case UNARY_OPERATION: {
+            assert(circuit.type_value.un_op.input != NULL);
+        }
+        case INPUT_SOURCE:
+        default:
+            break;
+        }
+    }
 #endif
 
     // Find circuit node wire_point with cli args provided name.
     const char *node_name = argv[2];
-    node *point_of_interest;
+    node *point_of_interest = NULL;
 
     for (size_t i = 0; i < aoc_parser.logic_size; ++i) {
         const node circuit = aoc_parser.logic_board[i];
@@ -71,15 +93,17 @@ int main(int argc, char **argv) {
             const char *name = circuit.type_value.wire.name;
             const size_t name_len = circuit.type_value.wire.name_len;
 
-            if (1 == name_len && strncmp(node_name, name, 1) == 0) {
+            if (1 == name_len && strncmp(node_name, name, name_len) == 0) {
                 point_of_interest = &aoc_parser.logic_board[i];
+                break;
             }
         }
     }
     assert(point_of_interest != NULL && "wire point not found");
 
     //  3. Emulate
-    uint16_t result = logic_board_evaluate(point_of_interest);
+    // uint16_t result = logic_board_evaluate(point_of_interest);
+    uint16_t result = logic_board_evaluate_stack_friendly(point_of_interest);
     printf("Value of %s: %hu\n", node_name, result);
 
     // Cleanup

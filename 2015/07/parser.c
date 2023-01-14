@@ -39,46 +39,15 @@ static node *add_node(parser *p, node n) {
     return &p->logic_board[index];
 }
 
-static void next_wire_point(parser *p, node *input) {
-    assert(pc(p).type == CONNECTOR);
-    assert(pn(p).type == VARIABLE);
-
-    adv(p);
-    const char *wire_name = pc(p).lexeme;
-    const size_t wire_name_len = pc(p).lexeme_size;
-    adv(p);
-
-    node circuit;
-    circuit.type = WIRE_POINT;
-    circuit.value = 0;
-    circuit.type_value.wire.input = input;
-    circuit.type_value.wire.name = wire_name;
-    circuit.type_value.wire.name_len = wire_name_len;
-
-    add_node(p, circuit);
-}
-
-static void next_input_source(parser *p) {
-    assert(pc(p).type == VALUE);
-
-    uint16_t value = atoi(pc(p).lexeme);
-    adv(p);
-
-    node circuit;
-    circuit.type = INPUT_SOURCE;
-    circuit.value = value;
-    next_wire_point(p, add_node(p, circuit));
-}
-
 static node *next_variable(parser *p) {
     assert(pc(p).type == VARIABLE);
 
     // Check if variable already exists, otherwise create it.
+    const char *search = pc(p).lexeme;
+    const size_t search_len = pc(p).lexeme_size;
     for (size_t i = 0; i < p->logic_size; ++i) {
         const node circuit = p->logic_board[i];
         if (circuit.type == WIRE_POINT) {
-            const char *search = pc(p).lexeme;
-            const size_t search_len = pc(p).lexeme_size;
             const char *name = circuit.type_value.wire.name;
             const size_t name_len = circuit.type_value.wire.name_len;
 
@@ -92,9 +61,34 @@ static node *next_variable(parser *p) {
     node circuit;
     circuit.type = WIRE_POINT;
     circuit.value = 0;
-    circuit.type_value.wire.name = pc(p).lexeme;
+    circuit.type_value.wire.name = search;
+    circuit.type_value.wire.name_len = search_len;
 
     return add_node(p, circuit);
+}
+
+static void next_wire_point(parser *p, node *input) {
+    assert(pc(p).type == CONNECTOR);
+    assert(pn(p).type == VARIABLE);
+    adv(p);
+
+    node *circuit = next_variable(p);
+    adv(p);
+
+    assert(input != NULL);
+    circuit->type_value.wire.input = input;
+}
+
+static void next_input_source(parser *p) {
+    assert(pc(p).type == VALUE);
+
+    uint16_t value = atoi(pc(p).lexeme);
+    adv(p);
+
+    node circuit;
+    circuit.type = INPUT_SOURCE;
+    circuit.value = value;
+    next_wire_point(p, add_node(p, circuit));
 }
 
 static node *next_value_or_variable(parser *p) {
@@ -128,8 +122,7 @@ static node *next_value_or_variable(parser *p) {
 }
 
 static void next_binary_operation(parser *p) {
-    assert(pc(p).type == VARIABLE);
-    node *wire_point_left = next_variable(p);
+    node *wire_point_left = next_value_or_variable(p);
     adv(p);
 
     node operation;
@@ -185,14 +178,26 @@ static void next_unary_operation(parser *p) {
     node *input = next_variable(p);
     adv(p);
 
+    assert(input != NULL);
     operation.type_value.un_op.input = input;
 
     next_wire_point(p, add_node(p, operation));
 }
 
+static void next_variable_wire_point(parser *p) {
+    assert(pc(p).type == VARIABLE);
+    assert(pn(p).type == CONNECTOR);
+
+    node *input_var = next_variable(p);
+    adv(p);
+
+    next_wire_point(p, input_var);
+}
+
 void parse_logic_board(parser *p) {
     while (true) {
         lexer_token c = pc(p);
+        // printf("LINE: %lu\n", c.lineno);
 
         if (c.type == END_OF_FILE) {
             break;
@@ -200,7 +205,12 @@ void parse_logic_board(parser *p) {
 
         switch (c.type) {
         case VALUE: {
-            next_input_source(p);
+            lexer_token n = pn(p);
+            if (n.type == CONNECTOR) {
+                next_input_source(p);
+            } else {
+                next_binary_operation(p);
+            }
             break;
         }
         case VARIABLE: {
@@ -213,13 +223,16 @@ void parse_logic_board(parser *p) {
                 next_binary_operation(p);
                 break;
             }
+            case CONNECTOR: {
+                next_variable_wire_point(p);
+                break;
+            }
             case UNQUALIFIED:
             case END_OF_FILE:
             case INSTRUCTION_END:
             case VALUE:
             case VARIABLE:
             case OPERATION_NOT:
-            case CONNECTOR:
             default:
                 fprintf(stderr,
                         "Error on line %lu: VARIABLE must be followed by an "
@@ -250,11 +263,5 @@ void parse_logic_board(parser *p) {
 
         assert(pc(p).type == INSTRUCTION_END);
         adv(p);
-    }
-
-    for (size_t i = 0; i < p->logic_size; ++i) {
-        node n = p->logic_board[i];
-        if (n.type == WIRE_POINT) {
-        }
     }
 }
