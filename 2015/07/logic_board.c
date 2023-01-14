@@ -78,9 +78,9 @@ static inline bool is_empty(node_stack *stack) {
 
 uint16_t logic_board_evaluate_stack_friendly(node *circuit) {
     node_stack stack;
-    stack.capacity = 1000;
+    stack.capacity = 5000;
     stack.count = -1;
-    stack.nodes = (node **)malloc(sizeof(node *) * 1000);
+    stack.nodes = (node **)malloc(sizeof(node *) * 5000);
 
     push(&stack, circuit);
 

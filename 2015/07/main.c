@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
     // Find circuit node wire_point with cli args provided name.
     const char *node_name = argv[2];
     node *point_of_interest = NULL;
+    node *point_of_interest_b = NULL;
 
     for (size_t i = 0; i < aoc_parser.logic_size; ++i) {
         const node circuit = aoc_parser.logic_board[i];
@@ -71,13 +72,24 @@ int main(int argc, char **argv) {
             const char *name = circuit.type_value.wire.name;
             const size_t name_len = circuit.type_value.wire.name_len;
 
-            if (1 == name_len && strncmp(node_name, name, name_len) == 0) {
+            if (point_of_interest == NULL && 1 == name_len &&
+                strncmp(node_name, name, name_len) == 0) {
                 point_of_interest = &aoc_parser.logic_board[i];
-                break;
+            }
+            if (point_of_interest_b == NULL && 1 == name_len &&
+                strncmp("b", name, name_len) == 0) {
+                point_of_interest_b = &aoc_parser.logic_board[i];
             }
         }
     }
     assert(point_of_interest != NULL && "wire point not found");
+    assert(point_of_interest_b != NULL && "wire point 'b' not found");
+
+    // Do some re-wiring
+    // Result from part 1: 16076
+    //   make this be the input into wire b
+    point_of_interest_b->value = 16076;
+    point_of_interest_b->is_value_set = true;
 
     //  3. Emulate
     // uint16_t result = logic_board_evaluate(point_of_interest);
