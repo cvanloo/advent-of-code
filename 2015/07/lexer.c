@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static lexer_token emit(lexer *l, lexer_token_type type);
 static void add_token(lexer *l, lexer_token token);
@@ -84,14 +85,41 @@ static lexer_token next_variable(lexer *l) {
 }
 
 static lexer_token next_operation(lexer *l) {
+    static const struct {
+        const char *keyword;
+        lexer_token_type token_type;
+    } keywords[] = {
+        {   "AND",    OPERATION_AND},
+        {    "OR",     OPERATION_OR},
+        {"LSHIFT", OPERATION_LSHIFT},
+        {"RSHIFT", OPERATION_RSHIFT},
+        {   "NOT",    OPERATION_NOT},
+    };
+
     assert(is_op_char(lc(l)));
 
     while (is_op_char(lc(l))) {
         adv(l);
     }
 
-    lexer_token token = emit(l, OPERATION);
+    lexer_token token = emit(l, UNQUALIFIED);
     fix(l);
+
+    const size_t keywords_size = sizeof(keywords) / sizeof(keywords[0]);
+    const char *word = token.lexeme;
+    const size_t word_size = token.lexeme_size;
+
+    for (size_t i = 0; i < keywords_size; ++i) {
+        const char *keyword = keywords[i].keyword;
+        const size_t keyword_size = strlen(keyword);
+
+        if (keyword_size == word_size &&
+            strncmp(word, keyword, word_size) == 0) {
+            token.type = keywords[i].token_type;
+            break;
+        }
+    }
+
     return token;
 }
 
@@ -109,16 +137,31 @@ static lexer_token next_connector(lexer *l) {
 static lexer_token next_newline(lexer *l) {
     assert(lc(l) == '\n');
 
-    adv(l);
+    // Forward instead of advance, so that emit won't allocate any memory for
+    // the lexeme string.
+    fwd(l);
 
     lexer_token token = emit(l, INSTRUCTION_END);
     fix(l);
-    free(token.lexeme);
     token.lexeme = malloc(3);
     token.lexeme[0] = '\\';
     token.lexeme[1] = 'n';
     token.lexeme[2] = 0;
+    token.lexeme_size = 2;
     ++l->lineno;
+    return token;
+}
+
+static lexer_token next_eof(lexer *l) {
+    assert(lc(l) == 0);
+    fwd(l);
+    lexer_token token = emit(l, END_OF_FILE);
+    token.lexeme = malloc(4);
+    token.lexeme[0] = 'E';
+    token.lexeme[1] = 'O';
+    token.lexeme[2] = 'F';
+    token.lexeme[3] = 0;
+    token.lexeme_size = 3;
     return token;
 }
 
@@ -177,6 +220,9 @@ void lexer_tokenize(lexer *l) {
 
         add_token(l, token);
     }
+
+    lexer_token token = next_eof(l);
+    add_token(l, token);
 }
 
 static lexer_token emit(lexer *l, lexer_token_type type) {
@@ -193,6 +239,7 @@ static lexer_token emit(lexer *l, lexer_token_type type) {
     lexer_token token = {
         .type = type,
         .lexeme = lexeme,
+        .lexeme_size = lexeme_size,
         .lineno = l->lineno,
     };
 

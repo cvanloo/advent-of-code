@@ -12,19 +12,20 @@ typedef enum lexer_token_type {
     INSTRUCTION_END,
     VALUE,
     VARIABLE,
-    OPERATION,
+    OPERATION_AND,
+    OPERATION_OR,
+    OPERATION_LSHIFT,
+    OPERATION_RSHIFT,
+    OPERATION_NOT,
     CONNECTOR,
 } lexer_token_type;
 
 static inline const char *token_type_str(lexer_token_type type) {
     static const char *strings[] = {
-        "UNQUALIFIED",
-        "END_OF_FILE",
-        "INSTRUCTION_END",
-        "VALUE",
-        "VARIABLE",
-        "OPERATION",
-        "CONNECTOR",
+        "UNQUALIFIED",   "END_OF_FILE",      "INSTRUCTION_END",
+        "VALUE",         "VARIABLE",         "OPERATION_AND",
+        "OPERATION_OR",  "OPERATION_LSHIFT", "OPERATION_RSHIFT",
+        "OPERATION_NOT", "CONNECTOR",
     };
 
     return strings[type];
@@ -33,7 +34,8 @@ static inline const char *token_type_str(lexer_token_type type) {
 typedef struct lexer_token {
     lexer_token_type type;
     char *lexeme;
-    uint64_t lineno;
+    size_t lexeme_size;
+    size_t lineno;
 } lexer_token;
 
 typedef struct lexer {
