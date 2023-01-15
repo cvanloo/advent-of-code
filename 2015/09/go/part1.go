@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type leg struct {
@@ -14,18 +17,65 @@ type leg struct {
 type node struct {
 	name       string
 	distance   int
-	neighbours []*leg
+	neighbours []leg
+}
+
+func findCityByName(nodes []*node, name string) *node {
+	for _, n := range nodes {
+		if n.name == name {
+			return n
+		}
+	}
+	return nil
 }
 
 func parseInput(input string) ([]*node, error) {
-	return nil, nil
+	var nodes []*node
+
+	lines := strings.Split(input, "\n")
+	for _, line := range lines {
+		words := strings.Fields(line)
+		startCityName := words[0]
+		endCityName := words[2]
+		distanceBetween, err := strconv.Atoi(words[4])
+		if err != nil {
+			panic(err)
+		}
+
+		endNode := findCityByName(nodes, endCityName)
+		startNode := findCityByName(nodes, startCityName)
+
+		if endNode == nil {
+			endNode = &node{
+				name:     endCityName,
+				distance: math.MaxInt,
+			}
+		}
+
+		if startNode == nil {
+			startNode = &node{
+				name:     startCityName,
+				distance: math.MaxInt,
+			}
+		}
+
+		startNode.neighbours = append(startNode.neighbours, leg{
+			target:   endNode,
+			distance: distanceBetween,
+		})
+
+		nodes = append(nodes, endNode)
+		nodes = append(nodes, startNode)
+	}
+
+	return nodes, nil
 }
 
 func nodesToSet(nodes []*node) map[*node]struct{} {
-	var nodesSet map[*node]struct{}
+	nodesSet := make(map[*node]struct{}, len(nodes))
 	for _, n := range nodes {
-		var nCopy node = *n
-		nodesSet[&nCopy] = struct{}{}
+		n.distance = math.MaxInt
+		nodesSet[n] = struct{}{}
 	}
 	return nodesSet
 }
@@ -78,7 +128,17 @@ func main() {
 	}
 
 	for _, startNode := range nodes {
-		set := nodesToSet(nodes)
-		shortestPath(set, startNode, )
+		for _, endNode := range nodes {
+			if startNode == endNode {
+				continue
+			}
+			set := nodesToSet(nodes)
+			startNode.distance = 0
+			distance := shortestPath(set, startNode, endNode)
+			if distance == math.MaxInt {
+				continue
+			}
+			fmt.Printf("Distance: %d\n", distance)
+		}
 	}
 }
