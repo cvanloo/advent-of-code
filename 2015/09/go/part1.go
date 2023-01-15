@@ -50,6 +50,7 @@ func parseInput(input string) ([]*node, error) {
 				name:     endCityName,
 				distance: math.MaxInt,
 			}
+			nodes = append(nodes, endNode)
 		}
 
 		if startNode == nil {
@@ -57,6 +58,7 @@ func parseInput(input string) ([]*node, error) {
 				name:     startCityName,
 				distance: math.MaxInt,
 			}
+			nodes = append(nodes, startNode)
 		}
 
 		startNode.neighbours = append(startNode.neighbours, leg{
@@ -64,8 +66,10 @@ func parseInput(input string) ([]*node, error) {
 			distance: distanceBetween,
 		})
 
-		nodes = append(nodes, endNode)
-		nodes = append(nodes, startNode)
+		endNode.neighbours = append(endNode.neighbours, leg{
+			target:   startNode,
+			distance: distanceBetween,
+		})
 	}
 
 	return nodes, nil
@@ -80,7 +84,8 @@ func nodesToSet(nodes []*node) map[*node]struct{} {
 	return nodesSet
 }
 
-func shortestPath(unvisited map[*node]struct{}, start *node, end *node) int {
+func shortestPath(unvisited map[*node]struct{}, start *node, end *node) (path []node, distance int) {
+	path = make([]node, 0, len(unvisited))
 	current := start
 	for {
 		for _, l := range current.neighbours {
@@ -94,6 +99,12 @@ func shortestPath(unvisited map[*node]struct{}, start *node, end *node) int {
 		}
 
 		delete(unvisited, current)
+		path = append(path, *current)
+
+		if current == end {
+			// we found our path
+			return path, current.distance
+		}
 
 		smallest := end
 		for next := range unvisited {
@@ -104,12 +115,7 @@ func shortestPath(unvisited map[*node]struct{}, start *node, end *node) int {
 
 		if smallest.distance == math.MaxInt {
 			// no path from start to end
-			return smallest.distance
-		}
-
-		if smallest == end {
-			// we found our path
-			return smallest.distance
+			return path, smallest.distance
 		}
 
 		current = smallest
@@ -127,6 +133,14 @@ func main() {
 		panic(err)
 	}
 
+	for _, n := range nodes {
+		fmt.Printf("%s -> ", n.name)
+		for _, neighbour := range n.neighbours {
+			fmt.Printf("%s ", neighbour.target.name)
+		}
+		fmt.Println()
+	}
+
 	for _, startNode := range nodes {
 		for _, endNode := range nodes {
 			if startNode == endNode {
@@ -134,11 +148,14 @@ func main() {
 			}
 			set := nodesToSet(nodes)
 			startNode.distance = 0
-			distance := shortestPath(set, startNode, endNode)
-			if distance == math.MaxInt {
-				continue
+			path, distance := shortestPath(set, startNode, endNode)
+			//if distance != math.MaxInt && len(path) == len(nodes) {
+			fmt.Printf("start %s, end %s: ", startNode.name, endNode.name)
+			for _, p := range path {
+				fmt.Printf("%s, ", p.name)
 			}
-			fmt.Printf("Distance: %d\n", distance)
+			fmt.Printf("-> distance: %d\n", distance)
+			//}
 		}
 	}
 }
