@@ -1,0 +1,6 @@
+AllowShortFunctionsOnASingleLine: Empty
+AlignArrayOfStructures: Right
+#AlignConsecutiveAssignments: AcrossEmptyLinesAndComments # Consecutive
+AlignConsecutiveBitFields: Consecutive
+#AlignConsecutiveDeclarations: Consecutive
+IndentWidth: 4
