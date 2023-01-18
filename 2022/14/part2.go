@@ -111,10 +111,14 @@ func parseInput(input string) (fields map[Point]Structure, lowestPoint int, err 
 
 func simulateSand(fields map[Point]Structure, spawnPoint Point, lowestPoint int) uint {
 	var sandAtRest uint
-outer:
+
 	for {
 		x, y := spawnPoint.Destructure()
 		for {
+			if y == lowestPoint-1 {
+				break
+			}
+
 			if fields[Point{x, y + 1}] == Air {
 				y += 1
 			} else if fields[Point{x - 1, y + 1}] == Air {
@@ -124,31 +128,36 @@ outer:
 				x += 1
 				y += 1
 			} else {
-				fields[Point{x, y}] = Sand
-				sandAtRest += 1
-				//printField(fields)
 				break
 			}
+		}
 
-			if y > lowestPoint {
-				break outer
-			}
+		fields[Point{x, y}] = Sand
+		sandAtRest += 1
+		//printField(fields, lowestPoint)
+
+		if spawnPoint.Equal(Point{x, y}) {
+			break
 		}
 	}
 
 	return sandAtRest
 }
 
-func printField(fields map[Point]Structure) {
-	for y := 0; y < 10; y++ {
-		for x := 492; x < 504; x++ {
+func printField(fields map[Point]Structure, lowestPoint int) {
+	for y := 0; y < 12; y++ {
+		for x := 480; x < 520; x++ {
 			if x == 500 && y == 0 {
 				fmt.Print("+")
 				continue
 			}
+			if y == lowestPoint {
+				fmt.Print("█")
+				continue
+			}
 			switch (fields[Point{x, y}]) {
 			case Air:
-				fmt.Print(" ")
+				fmt.Print(".")
 			case Wall:
 				fmt.Print("#")
 			case Sand:
@@ -167,6 +176,6 @@ func main() {
 	fields, lowestPoint, err := parseInput(string(input))
 	panicIf(err)
 	fmt.Printf("Number of wall fields parsed: %d\n", len(fields))
-	result := simulateSand(fields, Point{500, 0}, lowestPoint)
+	result := simulateSand(fields, Point{500, 0}, lowestPoint+2)
 	fmt.Printf("Result: %d\n", result)
 }
