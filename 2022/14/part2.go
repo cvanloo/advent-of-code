@@ -79,18 +79,17 @@ func parseInput(input string) (fields map[Point]Structure, lowestPoint int, err 
 				return
 			}
 
-			if startX > endX {
-				startX, endX = endX, startX
-			}
-			if startY > endY {
-				startY, endY = endY, startY
-			}
-
 			if startX == endX {
+				if startY > endY {
+					startY, endY = endY, startY
+				}
 				for i := startY; i <= endY; i++ {
 					fields[Point{startX, i}] = Wall
 				}
 			} else if startY == endY {
+				if startX > endX {
+					startX, endX = endX, startX
+				}
 				for i := startX; i <= endX; i++ {
 					fields[Point{i, startY}] = Wall
 				}
