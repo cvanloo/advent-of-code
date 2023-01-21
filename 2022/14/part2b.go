@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -55,7 +56,8 @@ func Max(a, b int) int {
 	return b
 }
 
-func parseInput(input string) (fields map[Point]Structure, lowestPoint int, err error) {
+func parseInput(input string) (fields map[Point]Structure, lowestPoint, mostLeft, mostRight int, err error) {
+	lowestPoint, mostLeft, mostRight = 0, math.MaxInt, 0
 	fields = make(map[Point]Structure)
 	intParser := strconvWrapper{nil}
 	lines := strings.Split(input, "\n")
@@ -98,18 +100,21 @@ func parseInput(input string) (fields map[Point]Structure, lowestPoint int, err 
 				panic("diagonals are not allowed")
 			}
 
-			if startY > lowestPoint {
-				lowestPoint = startY
-			}
 			if endY > lowestPoint {
 				lowestPoint = endY
+			}
+			if endX > mostRight {
+				mostRight = startX
+			}
+			if startX < mostLeft {
+				mostLeft = startX
 			}
 		}
 	}
 	return
 }
 
-func simulateSand(fields map[Point]Structure, spawnPoint Point, lowestPoint int) uint {
+func simulateSand(fields map[Point]Structure, spawnPoint Point, lowestPoint, mostLeft, mostRight int) uint {
 	var sandAtRest uint
 
 	for {
@@ -132,13 +137,13 @@ func simulateSand(fields map[Point]Structure, spawnPoint Point, lowestPoint int)
 			}
 
 			fields[Point{x, y}] = Sand
-			printField(fields, lowestPoint)
+			printField(fields, lowestPoint, mostLeft, mostRight)
 			fields[Point{x, y}] = Air
 		}
 
 		fields[Point{x, y}] = Sand
 		sandAtRest += 1
-		printField(fields, lowestPoint)
+		printField(fields, lowestPoint, mostLeft, mostRight)
 
 		if spawnPoint.Equal(Point{x, y}) {
 			break
@@ -160,10 +165,10 @@ const (
 	White  = "\033[97m"
 )
 
-func printField(fields map[Point]Structure, lowestPoint int) {
+func printField(fields map[Point]Structure, lowestPoint, mostLeft, mostRight int) {
 	fmt.Print("\033[H\033[2J")
-	for y := 0; y < 12; y++ {
-		for x := 480; x < 520; x++ {
+	for y := 0; y <= lowestPoint; y++ {
+		for x := mostLeft - 10; x <= mostRight+10; x++ {
 			if x == 500 && y == 0 {
 				fmt.Print(Red + "+" + Reset)
 				continue
@@ -185,15 +190,16 @@ func printField(fields map[Point]Structure, lowestPoint int) {
 		}
 		fmt.Println()
 	}
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 50)
 }
 
 func main() {
 	input, err := io.ReadAll(os.Stdin)
 	panicIf(err)
-	fields, lowestPoint, err := parseInput(string(input))
+	fields, lowestPoint, mostLeft, mostRight, err := parseInput(string(input))
 	panicIf(err)
 	fmt.Printf("Number of wall fields parsed: %d\n", len(fields))
-	result := simulateSand(fields, Point{500, 0}, lowestPoint+2)
+	fmt.Printf("Lowest: %d, Left: %d, Right: %d\n", lowestPoint+2, mostLeft, mostRight)
+	result := simulateSand(fields, Point{500, 0}, lowestPoint+2, mostLeft, mostRight)
 	fmt.Printf("Result: %d\n", result)
 }

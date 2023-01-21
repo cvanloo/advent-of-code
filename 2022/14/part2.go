@@ -97,9 +97,6 @@ func parseInput(input string) (fields map[Point]Structure, lowestPoint int, err 
 				panic("diagonals are not allowed")
 			}
 
-			if startY > lowestPoint {
-				lowestPoint = startY
-			}
 			if endY > lowestPoint {
 				lowestPoint = endY
 			}
