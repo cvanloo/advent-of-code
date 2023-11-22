@@ -58,7 +58,7 @@ func findDistance(distances []distance, a, b string) int {
 	panic("not found")
 }
 
-func appendUnique[T string|int](a []T, els ...T) []T {
+func appendUnique[T comparable](a []T, els ...T) []T {
 outer:
 	for _, el := range els {
 		for i := range a {
