@@ -108,6 +108,7 @@ func main() {
 	fmt.Printf("%+v\n", permutations)
 
 	shortestCost, shortestVector := math.MaxInt, []int{}
+	longestCost, longestVector := 0, []int{}
 	for _, perm := range permutations {
 		totalCost := 0
 		for i := 1; i < len(perm); i++ {
@@ -119,21 +120,11 @@ func main() {
 			shortestCost = totalCost
 			shortestVector = perm
 		}
-	}
-	fmt.Printf("Part 1: %+v (%+v)\n", shortestCost, shortestVector)
-
-	longestCost, longestVector := 0, []int{}
-	for _, perm := range permutations {
-		totalCost := 0
-		for i := 1; i < len(perm); i++ {
-			a := perm[i-1]
-			b := perm[i]
-			totalCost += findDistance(distances, places[a], places[b])
-		}
 		if totalCost > longestCost {
 			longestCost = totalCost
 			longestVector = perm
 		}
 	}
+	fmt.Printf("Part 1: %+v (%+v)\n", shortestCost, shortestVector)
 	fmt.Printf("Part 2: %+v (%+v)\n", longestCost, longestVector)
 }
