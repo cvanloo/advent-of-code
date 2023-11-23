@@ -4,33 +4,32 @@
   [s]
   (map #(Integer/parseInt (str %)) s))
 
-(defn partition-same
-  [xs]
-  (reduce (fn [acc n]
-            (if-let [prev (last (last acc))]
-              (if (= prev n)
-                (conj (pop acc) (conj (last acc) n))
-                (conj acc [n]))
-              (conj acc [n])))
-          []
-          xs))
+(defn next-cypher-step
+  [{last :last count :count say :say}]
+  (conj say count last))
 
-(defn count-same
-  [xxs]
-  (reduce (fn [acc n]
-            (conj acc (count n) (first n)))
-          []
-          xxs))
+(defn look-and-say
+  [input]
+  (next-cypher-step
+    (reduce
+      (fn [{last :last count :count say :say :as acc} n]
+        {:last n
+         :count (if (= last n) (inc count) 1)
+         :say (if (= last n) say (next-cypher-step acc))})
+      {:last (first input) :count 1 :say []}
+      (rest input))))
 
-(def look-and-say (comp count-same partition-same parse-string))
+(defmacro repeat-fun
+  [n f a]
+  `(loop [i# ~n
+          a# ~a]
+     (if (zero? i#)
+       a#
+       (recur (dec i#) (~f a#)))))
 
-(look-and-say "211333") ; => [1 2 2 1 3 3]
+(macroexpand-1 '(repeat-fun 40 look-and-say (parse-string input)))
 
-(time (count (loop [i 40
-                    input input]
-              (if (zero? i)
-                input
-                (recur (dec i) (look-and-say input))))))
-
-; part 1 (40x): 329356
-; part 2 (50x): 
+(time (count (repeat-fun 40 look-and-say (parse-string input))))
+; part 1 (40x): 329356  "Elapsed time: 210.1865 msecs"
+(time (count (repeat-fun 50 look-and-say (parse-string input))))
+; part 2 (50x): 4666278 "Elapsed time: 2979.234 msecs"
