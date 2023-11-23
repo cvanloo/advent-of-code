@@ -30,6 +30,6 @@
 (macroexpand-1 '(repeat-fun 40 look-and-say (parse-string input)))
 
 (time (count (repeat-fun 40 look-and-say (parse-string input))))
-; part 1 (40x): 329356  "Elapsed time: 210.1865 msecs"
+; part 1 (40x): 329356  "Elapsed time: 125.969177 msecs"
 (time (count (repeat-fun 50 look-and-say (parse-string input))))
-; part 2 (50x): 4666278 "Elapsed time: 2979.234 msecs"
+; part 2 (50x): 4666278 "Elapsed time: 1416.491101 msecs"

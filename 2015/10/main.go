@@ -54,5 +54,5 @@ func main() {
 	}
 	dur := time.Now().Sub(t)
 	fmt.Printf("%+v (took %s)\n", len(digits), dur)
-	// part 2 (50x): 4666278, takes ~1.6s
+	// part 2 (50x): 4666278, (took 1.551496551s)
 }
