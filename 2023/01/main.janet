@@ -1,31 +1,14 @@
-#(def peg-numbers
-#  (peg/compile '{:number (+ :d "one" "two" "three" "four" "five" "six" "seven" "eight" "nine" "ten") 
-#                 :main (any (+ (<- (* ($) :number)) 1))}))
-
-
 (def peg-numbers
-  (peg/compile '{:number (+ :d "one" "two" "three" "four" "five" "six" "seven" "eight" "nine" "ten") 
-                 :main (any (+ (<- :number) 1))}))
-
-(def number-names
-  {"1" 1
-   "2" 2
-   "3" 3
-   "4" 4
-   "5" 5
-   "6" 6
-   "7" 7
-   "8" 8
-   "9" 9
-   "one" 1
-   "two" 2
-   "three" 3
-   "four" 4
-   "five" 5
-   "six" 6
-   "seven" 7
-   "eight" 8
-   "nine" 9})
+  (peg/compile '{:number (+ (* (> 0 "one")   (constant 1) 1)
+                            (* (> 0 "two")   (constant 2) 1)
+                            (* (> 0 "three") (constant 3) 1)
+                            (* (> 0 "four")  (constant 4) 1)
+                            (* (> 0 "five")  (constant 5) 1)
+                            (* (> 0 "six")   (constant 6) 1)
+                            (* (> 0 "seven") (constant 7) 1)
+                            (* (> 0 "eight") (constant 8) 1)
+                            (* (> 0 "nine")  (constant 9) 1))
+                 :main (any (+ :number (number :d) 1))}))
 
 (defn merge-numbers
   [numbers]
@@ -35,6 +18,7 @@
      (string/split "\n")
      (filter (comp not empty?))
      (map (fn [line] (peg/match peg-numbers line)))
-     (map (fn [line] (map number-names line)))
      (map merge-numbers)
      (reduce + 0))
+
+# => 54824
