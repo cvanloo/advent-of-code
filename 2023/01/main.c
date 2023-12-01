@@ -1,3 +1,5 @@
+// gcc -Wall -Wextra -Wswitch-enum -g main.c
+// valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./a.out input.txt
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -89,7 +91,7 @@ main(int argc, char **argv) {
 		assert(first_digit > -1);
 		if (last_digit == -1) last_digit = first_digit;
 		numbers[number_count++] = first_digit * 10 + last_digit;
-		printf("%d: %d\n", line_idx, numbers[number_count-1]);
+		//printf("%d: %d\n", line_idx, numbers[number_count-1]);
 	}
 
 	int result = 0;
