@@ -10,12 +10,6 @@
 ; => 55386
 
 ; Part 2:
-
-; Janet: (peg/match '{:number (+ "one" "two" "three" "four")
-;                     :main (any (+ (<- (* ($) :number)) 1))}
-;                   "onetwoooouthreeaouufour")
-; => @[0 "one" 3 "two" 10 "three" 19 "four"]
-
 (def spelled-out-numbers
   {"one" 1
    "two" 2
