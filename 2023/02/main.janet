@@ -47,13 +47,12 @@
 
 (defn minimum-color-amounts
   [game]
-  (reduce (fn [biggest [amount color]]
-            (if (> amount
-                   (or (biggest color) 0))
-              (set (biggest color) amount))
-            biggest)
-          @{}
-          (partition 2 (flatten game))))
+  (def biggest @{})
+  (each [amount color] (partition 2 (flatten game))
+    (if (> amount
+           (or (biggest color) 0))
+      (set (biggest color) amount)))
+  biggest)
 
 (->> (slurp "input.txt")
      (peg/match parser)
