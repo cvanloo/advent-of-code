@@ -7,7 +7,8 @@
                  :set (+ (* :value :s* "," :s+ :set) :value)
                  :listing (+ (* (group :set) :s* ";" :s+ :listing) (group :set))
                  :game (* :s* "Game" :s+ (number :d+) :s* ":" :s+ (group :listing))
-                 :main (some (group :game))}))
+                 :games (+ (* (group :game) "\n" :games) (group :game) (? "\n"))
+                 :main (any :games)}))
 
 (def get-game-number (partial 0))
 (def get-game-listing (partial 1))
