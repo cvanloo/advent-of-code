@@ -10,14 +10,14 @@
                  :games (+ (* (group :game) "\n" :games) (group :game) (? "\n"))
                  :main (any :games)}))
 
-(def get-game-number (partial 0))
-(def get-game-listing (partial 1))
+(def get-game-number 0)
+(def get-game-listing 1)
 
 (defn get-color
   [color lst]
-  (first (filter
-           (fn [[n c]] (when (= c color) n))
-           (partition 2 lst))))
+  (find
+    (fn [[n c]] (when (= c color) n))
+    (partition 2 lst)))
 
 (def get-red (partial get-color "red"))
 (def get-green (partial get-color "green"))
@@ -25,7 +25,7 @@
 
 (defn get-amount
   [color]
-  (if (nil? color) 0 (0 color)))
+  (if (nil? color) 0 (first color)))
 
 (defn listing-valid?
   [lst]
