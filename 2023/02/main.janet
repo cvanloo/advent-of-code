@@ -44,3 +44,23 @@
      (reduce + 0))
 
 # => 2617
+
+(defn minimum-color-amounts
+  [game]
+  (reduce (fn [biggest [amount color]]
+            (if (> amount
+                   (or (biggest color) 0))
+              (set (biggest color) amount))
+            biggest)
+          @{}
+          (partition 2 (flatten game))))
+
+(->> (slurp "input.txt")
+     (peg/match parser)
+     (map get-game-listing)
+     (map minimum-color-amounts)
+     (map values)
+     (map (fn [n] (reduce * 1 n)))
+     (reduce + 0))
+
+# => 59795
