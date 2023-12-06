@@ -1,21 +1,8 @@
 (require '[clojure.string :as str])
 
-(def $input "467..114..
-...*......
-..35..633.
-......#...
-617*......
-.....+.58.
-..592.....
-......755.
-...$.*....
-.664.598..")
-
-(def $input-lines
-  (str/split-lines $input))
-
-(def $line-length 10)
-(def $line-count 9)
+(def $input-lines (str/split-lines (slurp "input.txt")))
+(def $line-length (count (first $input-lines)))
+(def $line-count (count $input-lines))
 
 (defn find-number-positions
   [text]
@@ -35,15 +22,15 @@
          :result (if (= 1 (- idx last-idx))
                    (let [[num-begin line pos-start] (first result)]
                      (conj (rest result) [(str num-begin num) line pos-start idx]))
-                   (conj result [num line idx]))})
+                   (conj result [num line idx idx]))})
       {:result '()
-       :last-idx -2} 
+       :last-idx -5} 
       number-positions)))
 
 (defn neighbour-idxs
   [line start end]
   (let [line-top (max (dec line) 0)
-        line-bot (min (inc line) $line-count)
+        line-bot (min (inc line) (dec $line-count))
         start (max (dec start) 0)
         end (min (inc end) $line-length)]
     (map #(vector % start end)
@@ -58,12 +45,20 @@
   (->> (neighbour-idxs l s e)
        (map (partial apply neighbour-fields))
        flatten
-       (some #(contains? #{\$ \# \+ \*} %))))
+       (some #(not (or (Character/isDigit %) (= % \.))))))
 
-(->> $input
-     str/split-lines
+(has-non-empty-neighbour? [\4 3 56])
+
+(->> $input-lines
      (map find-number-positions)
      find-number-lines
      (map combine-consecutive-numbers)
      (apply concat)
-     (filter has-non-empty-neighbour?))
+     (filter has-non-empty-neighbour?)
+     (map first)
+     (map str)
+     (map #(Integer/parseInt %))
+     (reduce +))
+
+; Part 1
+; => 533784
