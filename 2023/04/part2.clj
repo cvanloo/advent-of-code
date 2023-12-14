@@ -24,27 +24,31 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11")
   (let [[winners numbers] (str/split line #"\|")]
     (map parse-numbers [winners numbers])))
 
-(defn pow
-  [a n]
-  ; note that (apply * '()) results in 1
-  (apply * (repeat n a)))
-
-(defn scratchcard-value
+(defn scratchcard-matches
   [scratchcard]
   (let [freqs (map frequencies scratchcard)
         common-numbers (apply set/intersection (map (comp set keys) freqs))
         number-of-matches (reduce + (map #((second freqs) %) common-numbers))]
-    (if (= 0 number-of-matches)
-      0
-      (pow 2 (dec number-of-matches)))))
+    number-of-matches))
 
-(def $input (slurp "input.txt"))
-
+(defn count-cards
+  [matches]
+  (reduce
+    (fn [counts [amount index]]
+      (let [amount-of-cur-card (nth counts (dec index))
+            begin (take index counts)
+            middle (take amount (drop index counts))
+            end (drop (+ amount index) counts)]
+        (concat begin (map #(+ % amount-of-cur-card) middle) end)))
+    (vec (repeat (count matches) 1))
+    (partition 2 (interleave matches (rest (range))))))
+ 
 (->> $input
      clojure.string/split-lines
      (map parse-line)
-     (map scratchcard-value)
+     (map scratchcard-matches)
+     count-cards
      (reduce +))
 
-; Part 1:
-; => 24542
+; Part 2:
+; => 8736438
