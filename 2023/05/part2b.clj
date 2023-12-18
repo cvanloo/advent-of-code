@@ -161,11 +161,13 @@
             (map #(% mappings) traverse-order))))
 
 (def $input (slurp "sample.txt"))
-; Expected result => [46 82N]
+; => [46N 82N 10N] (the correct result)
 
-(comment (def $input (slurp "input.txt")))
+(def $input (slurp "input.txt"))
+; => evaluates to [0N 1662378336N 37466398N] which is clearly wrong
 
-(time (let [mappings (collapse-mappings (parse-input $input))]
-       (->> mappings
-            (sort-by first)
-            first)))
+(time (->> (parse-input $input)
+           collapse-mappings
+           (sort-by first)
+           first))
+
