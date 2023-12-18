@@ -50,6 +50,8 @@
 
 
 
+
+
 (defn getter [i m]
   (get m i))
 
@@ -59,9 +61,13 @@
 (def dst-end #(+ (dst %) (len %)))
 (def src-end #(+ (src %) (len %)))
 
-(def $input (slurp "sample.txt"))
+(defn create-mapping
+  [to from len]
+  [to from len])
 
-; Expected result => [46 82N]
+(defn map-self
+  [from len]
+  (create-mapping from from len)) 
 
 (def traverse-order [:seed-to-soil
                      :soil-to-fertilizer
@@ -71,17 +77,9 @@
                      :temperature-to-humidity
                      :humidity-to-location])
 
-(defn create-mapping
-  [to from len]
-  [to from len])
-
-(defn map-self
-  [from len]
-  (create-mapping from from len)) 
-
 (defn resolve-overlap
   "Dear future me: I do not expect you to understand this. Sorry."
-  [next-map prev-map]
+  [prev-map next-map]
   (letfn [(prev-contains-next? [n p]
             (and (< (dst p) (src n))
                  (> (dst-end p) (src-end n))))
@@ -95,7 +93,7 @@
           (prev-overlaps-next-begin? [n p]
             (and (> (src n) (dst p))
                  (< (src n) (dst-end p))
-                 (>= (dst-end n) (dst-end p))))]
+                 (>= (src-end n) (dst-end p))))]
     (cond
       (prev-contains-next? next-map prev-map)
       (let [before-len (- (src next-map) (dst prev-map))
@@ -133,27 +131,39 @@
                          before-len)
          (create-mapping (dst next-map)
                          (+ (src prev-map) before-len)
-                         (- (len prev-map) before-len))])
-
-      :else [prev-map])))
-
-(comment
-  (resolve-overlap [90 10 3] [5 15 20]) ; => [[5 15 5] [90 20 3] [13 23 12]]
-  (resolve-overlap [5 80 20] [90 10 3]) ; => [[15 10 3]]
-  (resolve-overlap [90 2 10] [5 50 30]) ; => [[93 50 7] [12 57 23]]
-  (resolve-overlap [90 10 40] [5 50 30])) ; => [[5 50 5] [90 55 25]]
+                         (- (len prev-map) before-len))]))))
 
 (defn update-map-entry
-  [mapping map-entry]
-  (let [res (apply concat
-                  (map (partial resolve-overlap map-entry)
-                       mapping))]
-    (println mapping map-entry res)
-    res))
+  [mapping-el map-data]
+  (or (->> map-data
+          (map (partial resolve-overlap mapping-el))
+          (apply concat)
+          (#(if (empty? %) nil %)))
+      [mapping-el]))
 
 (defn update-mapping
   [mapping map-data]
-  (reduce update-map-entry mapping map-data))
+  (loop [mapping-el (first mapping)
+         mapping (rest mapping)
+         collapsed-mapping []]
+    (if (nil? mapping-el)
+      (apply concat collapsed-mapping)
+      (recur (first mapping)
+             (rest mapping)
+             (conj collapsed-mapping
+                   (update-map-entry mapping-el map-data))))))
+
+; take ith element from collapsed-mappings
+; try to apply the elements from map-data (at most one should apply)
+; repeat with i+1
+; 
+; collapsed-mapping ([79N 79N 14N] [55N 55N 13N])
+; map-data ([50N 98N 2N] [52N 50N 48N]) 
+(update-mapping '([79N 79N 14N] [55N 55N 13N])
+                '([50N 98N 2N] [52N 50N 48N]))
+
+(update-mapping '([79N 79N 14N] [55N 55N 13N])
+                '([50N 2N 2N] [52N 5N 4N]))
 
 (defn collapse-mappings
   [mappings]
@@ -162,5 +172,17 @@
             collapsed-mapping
             (map #(% mappings) traverse-order))))
 
-(let [mappings (parse-input $input)]
-  (collapse-mappings mappings))
+(def $input (slurp "sample.txt"))
+; Expected result => [46 82N]
+
+(time (let [mappings (collapse-mappings (parse-input $input))]
+       (->> mappings
+            (sort-by first)
+            first)))
+
+
+(comment)
+(time (let [mappings (collapse-mappings (parse-input (slurp "input.txt")))]
+       (->> mappings
+            (sort-by first)
+            first)))
