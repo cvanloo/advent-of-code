@@ -153,18 +153,6 @@
              (conj collapsed-mapping
                    (update-map-entry mapping-el map-data))))))
 
-; take ith element from collapsed-mappings
-; try to apply the elements from map-data (at most one should apply)
-; repeat with i+1
-; 
-; collapsed-mapping ([79N 79N 14N] [55N 55N 13N])
-; map-data ([50N 98N 2N] [52N 50N 48N]) 
-(update-mapping '([79N 79N 14N] [55N 55N 13N])
-                '([50N 98N 2N] [52N 50N 48N]))
-
-(update-mapping '([79N 79N 14N] [55N 55N 13N])
-                '([50N 2N 2N] [52N 5N 4N]))
-
 (defn collapse-mappings
   [mappings]
   (let [collapsed-mapping (map (partial apply map-self) (partition 2 (:seeds mappings)))]
@@ -175,14 +163,9 @@
 (def $input (slurp "sample.txt"))
 ; Expected result => [46 82N]
 
+(comment (def $input (slurp "input.txt")))
+
 (time (let [mappings (collapse-mappings (parse-input $input))]
-       (->> mappings
-            (sort-by first)
-            first)))
-
-
-(comment)
-(time (let [mappings (collapse-mappings (parse-input (slurp "input.txt")))]
        (->> mappings
             (sort-by first)
             first)))
