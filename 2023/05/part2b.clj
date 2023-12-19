@@ -163,6 +163,32 @@
                          (+ (src prev-map) before-len)
                          (- (len prev-map) before-len))]))))
 
+(letfn [(test [prev-map next-map expected-result]
+          [prev-map next-map expected-result])
+
+        (run-test [tests]
+          (filter (fn [[_ _ expected-result actual-result]]
+                    (not (= expected-result actual-result)))
+                  (map (fn [[prev-map next-map expected-result]]
+                           [prev-map next-map expected-result
+                            (resolve-overlap prev-map next-map)])
+                       tests)))
+
+        (print-result [tests]
+          (doseq [[prev-map next-map expected-result actual-result] tests]
+            (println "p" prev-map "n" next-map "expected" expected-result "actual" actual-result)))]
+
+  (print-result
+    (run-test [(test [5 15 20] [90 10 3] [[5 15 5] [90 20 3] [13 23 12]])
+               (test [90 10 3] [5 80 20] [[15 10 3]])])))
+
+
+
+  
+
+
+
+
 (defn update-map-entry
   "mapping-el can be a range that spans across / overlaps with multiple of the
    ranges from map-data.
