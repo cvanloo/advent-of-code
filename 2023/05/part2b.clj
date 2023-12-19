@@ -179,12 +179,26 @@
             (println "p" prev-map "n" next-map "expected" expected-result "actual" actual-result)))]
 
   (print-result
-    (run-test [(test [5 15 20] [90 10 3] [[5 15 5] [90 20 3] [13 23 12]])
-               (test [90 10 3] [5 80 20] [[15 10 3]])])))
+    (run-test [; Complete overlap
+               (test [20 5 7] [60 20 7] [[60 5 7]])
+               (test [20 5 7] [55 15 14] [[60 5 7]])
+               (test [20 5 7] [60 20 14] [[60 5 7]])
+               (test [20 5 7] [53 13 14] [[60 5 7]])
+               ; Middle of first range overlaps with second range
+               (test [45 10 7] [5 47 3] [[45 10 2] [5 12 3] [50 15 2]])
+               ; Beginning overlaps
+               (test [70 10 20] [60 70 5] [[60 10 5] [75 15 15]])
+               (test [70 10 20] [60 63 12] [[67 10 5] [75 15 15]])
+               ; End overlaps
+               (test [40 10 20] [90 55 5] [[40 10 15] [90 25 5]])])))
+               ;(test [40 10 20] [] [[] []])])))
 
 
 
-  
+
+
+
+
 
 
 
