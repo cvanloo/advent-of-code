@@ -165,24 +165,24 @@
                          (- (len prev-map) before-len))]))))
 
 (defn update-map-entry
-  [mapping-el map-data]
+  "mapping-el can be a range that spans across / overlaps with multiple of the
+   ranges from map-data.
+   The ranges from map-data must not have any overlap with each other."
+  [map-data mapping-el]
   (or (->> map-data
-          (map (partial resolve-overlap mapping-el))
-          (apply concat)
-          (#(if (empty? %) nil %)))
+           (map (partial resolve-overlap mapping-el))
+           (apply concat)
+           (#(if (empty? %) nil %)))
       [mapping-el]))
 
 (defn update-mapping
-  [mapping-initial map-data]
-  (loop [mapping-el (first mapping-initial)
-         mapping (rest mapping-initial)
-         collapsed-mapping []]
-    (if (nil? mapping-el)
-      (apply concat collapsed-mapping)
-      (recur (first mapping) (rest mapping)
-             (conj collapsed-mapping
-                   (map-update-history mapping-el
-                                       #(update-map-entry % map-data)))))))
+  [mappings map-data]
+  (apply concat
+    (map (fn [m]
+           (map-update-history
+             m
+             (partial update-map-entry map-data)))
+         mappings)))
 
 (defn collapse-mappings
   [mappings]
