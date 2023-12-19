@@ -72,16 +72,11 @@
   (map #(make-history % (conj history result))
        (f result)))
 
-(comment
-  (-> (make-history 5)
-      (update-history inc)
-      (update-history (partial * 2))
-      (update-history #(- 2 %))))
-
-(defn print-and-ret
+(defmacro print-and-ret
   [v]
-  (println v)
-  v)
+  `(let [res# ~v]
+     (println res#)
+     res#))
 
 (defn getter [i m]
   (get m i))
@@ -114,17 +109,21 @@
   (letfn [(prev-contains-next? [n p]
             (and (< (dst p) (src n))
                  (> (dst-end p) (src-end n))))
+
           (prev-is-subset-of-next? [n p]
             (and (>= (dst p) (src n))
                  (<= (dst-end p) (src-end n))))
+
           (prev-overlaps-next-end? [n p]
             (and (>= (dst p) (src n))
                  (< (dst p) (src-end n))
                  (> (dst-end p) (src-end n))))
+
           (prev-overlaps-next-begin? [n p]
             (and (> (src n) (dst p))
                  (< (src n) (dst-end p))
                  (>= (src-end n) (dst-end p))))]
+
     (cond
       (prev-contains-next? next-map prev-map)
       (let [before-len (- (src next-map) (dst prev-map))
@@ -206,4 +205,3 @@
            collapse-mappings
            (sort-by first)
            (take 10)))
-
