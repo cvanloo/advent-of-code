@@ -52,6 +52,37 @@
 
 
 
+
+
+(defn make-history
+  ([v]
+   {:result v
+    :history []})
+  ([v h]
+   {:result v
+    :history h}))
+
+(defn update-history
+  [{result :result history :history} f]
+  (make-history (f result)
+                (conj history result)))
+
+(defn map-update-history
+  [{result :result history :history} f]
+  (map #(make-history % (conj history result))
+       (f result)))
+
+(comment
+  (-> (make-history 5)
+      (update-history inc)
+      (update-history (partial * 2))
+      (update-history #(- 2 %))))
+
+(defn print-and-ret
+  [v]
+  (println v)
+  v)
+
 (defn getter [i m]
   (get m i))
 
@@ -142,20 +173,20 @@
       [mapping-el]))
 
 (defn update-mapping
-  [mapping map-data]
-  (loop [mapping-el (first mapping)
-         mapping (rest mapping)
+  [mapping-initial map-data]
+  (loop [mapping-el (first mapping-initial)
+         mapping (rest mapping-initial)
          collapsed-mapping []]
     (if (nil? mapping-el)
       (apply concat collapsed-mapping)
-      (recur (first mapping)
-             (rest mapping)
+      (recur (first mapping) (rest mapping)
              (conj collapsed-mapping
-                   (update-map-entry mapping-el map-data))))))
+                   (map-update-history mapping-el
+                                       #(update-map-entry % map-data)))))))
 
 (defn collapse-mappings
   [mappings]
-  (let [collapsed-mapping (map (partial apply map-self) (partition 2 (:seeds mappings)))]
+  (let [collapsed-mapping (map make-history (map (partial apply map-self) (partition 2 (:seeds mappings))))]
     (reduce update-mapping
             collapsed-mapping
             (map #(% mappings) traverse-order))))
@@ -163,11 +194,16 @@
 (def $input (slurp "sample.txt"))
 ; => [46N 82N 10N] (the correct result)
 
-(def $input (slurp "input.txt"))
+(comment (def $input (slurp "input.txt")))
 ; => evaluates to [0N 1662378336N 37466398N] which is clearly wrong
 
 (time (->> (parse-input $input)
            collapse-mappings
            (sort-by first)
            first))
+
+(time (->> (parse-input $input)
+           collapse-mappings
+           (sort-by first)
+           (take 10)))
 
