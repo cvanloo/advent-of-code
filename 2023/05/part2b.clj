@@ -1,3 +1,7 @@
+(ns main-clj.core
+  (:gen-class))
+
+
 (require '[clojure.string :as str]
          '[instaparse.core :as insta])
 
@@ -103,7 +107,25 @@
                      :temperature-to-humidity
                      :humidity-to-location])
 
-(defn resolve-overlap
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(defn collapse-overlap
   "Dear future me: I do not expect you to understand this. Sorry."
   [prev-map next-map]
   (letfn [(prev-contains-next? [n p]
@@ -126,93 +148,132 @@
 
     (cond
       (prev-contains-next? next-map prev-map)
-      (let [before-len (- (src next-map) (dst prev-map))
-            overlap-len (len next-map)
-            after-len (- (len prev-map) (+ before-len overlap-len))]
-        [(create-mapping (dst prev-map)
-                         (src prev-map)
-                         before-len)
-         (create-mapping (dst next-map)
-                         (+ (src prev-map) before-len)
-                         overlap-len)
-         (create-mapping (- (dst-end prev-map) after-len)
-                         (- (src-end prev-map) after-len)
-                         after-len)])
-
+      (create-mapping
+        (dst next-map)
+        (+ (src prev-map) (- (src next-map) (dst prev-map)))
+        (len next-map))
+      
       (prev-is-subset-of-next? next-map prev-map)
-      [(create-mapping (+ (dst next-map) (- (dst prev-map) (src next-map)))
-                       (src prev-map)
-                       (len prev-map))]
-
+      (create-mapping
+        (+ (dst next-map) (- (dst prev-map) (src next-map)))
+        (src prev-map)
+        (len prev-map))
+      
       (prev-overlaps-next-end? next-map prev-map)
-      (let [overlap-len (- (len next-map) (- (dst prev-map) (src next-map)))
-            after-len (- (len prev-map) overlap-len)]
-        [(create-mapping (- (dst-end next-map) overlap-len)
-                         (src prev-map)
-                         overlap-len)
-         (create-mapping (+ (dst prev-map) overlap-len)
-                         (+ (src prev-map) overlap-len)
-                         after-len)])
-
+      (let [overlap-len (- (len next-map) (- (dst prev-map) (src next-map)))]
+        (create-mapping
+          (- (dst-end next-map) overlap-len)
+          (src prev-map)
+          overlap-len))
+      
       (prev-overlaps-next-begin? next-map prev-map)
       (let [before-len (- (src next-map) (dst prev-map))]
-        [(create-mapping (dst prev-map)
-                         (src prev-map)
-                         before-len)
-         (create-mapping (dst next-map)
-                         (+ (src prev-map) before-len)
-                         (- (len prev-map) before-len))]))))
+        (create-mapping
+          (dst next-map)
+          (+ (src prev-map) before-len)
+          (- (len prev-map) before-len))))))
 
-(letfn [(test [prev-map next-map expected-result]
-          [prev-map next-map expected-result])
-
-        (run-test [tests]
-          (filter (fn [[_ _ expected-result actual-result]]
-                    (not (= expected-result actual-result)))
-                  (map (fn [[prev-map next-map expected-result]]
-                           [prev-map next-map expected-result
-                            (resolve-overlap prev-map next-map)])
-                       tests)))
-
-        (print-result [tests]
-          (doseq [[prev-map next-map expected-result actual-result] tests]
-            (println "p" prev-map "n" next-map "expected" expected-result "actual" actual-result)))]
-
-  (print-result
-    (run-test [; Complete overlap
-               (test [20 5 7] [60 20 7] [[60 5 7]])
-               (test [20 5 7] [55 15 14] [[60 5 7]])
-               (test [20 5 7] [60 20 14] [[60 5 7]])
-               (test [20 5 7] [53 13 14] [[60 5 7]])
-               ; Middle of first range overlaps with second range
-               (test [45 10 7] [5 47 3] [[45 10 2] [5 12 3] [50 15 2]])
-               ; Beginning overlaps
-               (test [70 10 20] [60 70 5] [[60 10 5] [75 15 15]])
-               (test [70 10 20] [60 63 12] [[67 10 5] [75 15 15]])
-               ; End overlaps
-               (test [40 10 20] [90 55 5] [[40 10 15] [90 25 5]])
-               (test [40 10 20] [90 55 15] [[40 10 15] [90 25 5]])])))
+(defn resolve-between
+  [prev-map collapsed-mapping]
+  (let [collapsed-mapping (sort-by src collapsed-mapping)]
+    (loop [next (first collapsed-mapping)
+           overlaps (rest collapsed-mapping)
+           total-len 0
+           betweens []]
+      (if (nil? next)
+        (if (= total-len (len prev-map))
+          betweens
+          (let [new-dst (+ (dst prev-map) total-len)
+                new-src (+ (src prev-map) total-len)
+                new-len (- (len prev-map) total-len)]
+            (conj betweens
+              (create-mapping new-dst new-src new-len))))
+        
+        (let [new-dst (+ (dst prev-map) total-len)
+              new-src (+ (src prev-map) total-len)
+              new-len (- (src next) new-src)]
+          (recur
+            (first overlaps)
+            (rest overlaps)
+            (+ total-len new-len (len next))
+            (if (zero? new-len)
+              (conj betweens next)
+              (conj betweens
+                (create-mapping new-dst new-src new-len)
+                next))))))))
 
 
+      
+         
 
+(let [prev-map [50 10 100]
+      mapping [[25 50 20]
+               [5 70 30]
+               [125 100 50]]]
+  (map
+    (partial collapse-overlap prev-map)
+    mapping))
 
+(let [prev-map [50 10 100]
+      mapping [[25 52 16]
+               [5 70 27]
+               [125 101 20]]]
+  (map
+    (partial collapse-overlap prev-map)
+    mapping))
 
+; [50 10 2] *[25 12 16]* [68 28 2] *[5 30 27]* [97 57 4] *[125 61 20]* [121 81 29]
+(resolve-between
+  [50 10 100]
+  [[25 12 16]
+   [5 30 27]
+   [125 61 20]])
+; => [[50 10 2] [25 12 16] [68 28 2] [5 30 27] [97 57 4] [125 61 20] [121 81 29]]
 
+(resolve-between
+  [50 10 100]
+  [[25 10 20]
+   [5 30 30]
+   [125 60 50]])
+; => [[25 10 20] [5 30 30] [125 60 50]]
 
-
+(resolve-between
+  [50 10 100]
+  [])
+; => [[50 10 100]]
 
 
 
 (defn update-map-entry
   "mapping-el can be a range that spans across / overlaps with multiple of the
-   ranges from map-data.
-   The ranges from map-data must not have any overlap with each other."
+  ranges from map-data.
+  The ranges from map-data must not have any overlap with each other."
   [map-data mapping-el]
-  (or (->> map-data
-           (map (partial resolve-overlap mapping-el))
-           (apply concat)
-           (#(if (empty? %) nil %)))
-      [mapping-el]))
+  (->> map-data
+       (map (partial collapse-overlap mapping-el))
+       (filter (comp not nil?))
+       (resolve-between mapping-el)))
+         
+
+(update-map-entry
+  [[25 50 20]
+   [5 70 30]
+   [125 100 50]]
+  [50 10 100])
+
+(update-map-entry
+  [[25 52 16]
+   [5 70 27]
+   [125 101 20]]
+  [50 10 100])
+
+(update-map-entry
+  [[70 205 5]
+   [80 357 3]]
+  [50 10 100])
+
+
+
 
 (defn update-mapping
   [mappings map-data]
@@ -222,6 +283,13 @@
              m
              (partial update-map-entry map-data)))
          mappings)))
+
+
+
+
+
+
+
 
 (defn collapse-mappings
   [mappings]
@@ -234,14 +302,17 @@
 ; => [46N 82N 10N] (the correct result)
 
 (comment (def $input (slurp "input.txt")))
-; => evaluates to [0N 1662378336N 37466398N] which is clearly wrong
+; => {:result [37806486N 1669061417N 30783317N], :history [[1499552892N 1499552892N 200291842N] [3654918290N 1499552892N 200291842N] [3855550220N 1669061417N 30783317N] [3855550220N 1669061417N 30783317N] [296168274N 1669061417N 30783317N] [860738727N 1669061417N 30783317N] [37806486N 1669061417N 30783317N]]}
+; => 37806486N is the correct result!
 
 (time (->> (parse-input $input)
            collapse-mappings
            (sort-by first)
            first))
 
-(time (->> (parse-input $input)
-           collapse-mappings
-           (sort-by first)
-           (take 10)))
+
+
+(defn -main []
+  ())
+
+
