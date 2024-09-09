@@ -4,6 +4,7 @@ use std::num::ParseIntError;
 use std::fmt;
 use std::fs;
 use std::collections::HashMap;
+use std::cmp::Ordering;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 enum Card {
@@ -25,7 +26,7 @@ enum Strength<'a> {
     FiveOfAKind(&'a Cards),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq)]
 struct Hand {
     cards: Cards,
     bid: u32,
@@ -73,6 +74,24 @@ impl FromStr for Hand {
         }
         let bid = bid.parse::<u32>()?;
         Ok(Hand{cards, bid})
+    }
+}
+
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.strength().cmp(&other.strength())
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Hand {
+    fn eq(&self, other: &Self) -> bool {
+        self.strength() == other.strength()
     }
 }
 
@@ -135,7 +154,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = fs::read_to_string("input")?;
     let mut hands = input.lines().map(Hand::from_str).collect::<Result<Vec<Hand>, HandParseError>>()?;
 
-    hands.sort_by(|a, b| a.strength().cmp(&b.strength()));
+    hands.sort();
 
     let total: u32 = hands.iter().enumerate().map(|(i, hand)| (i + 1) as u32 * hand.bid).sum();
 
